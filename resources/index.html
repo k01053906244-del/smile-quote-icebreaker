@@ -444,8 +444,21 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -1; /* 게이트웨이 콘텐츠 뒤로 배치 */
-            opacity: 0.25; /* 눈부심 방지를 위한 은은한 투명도 */
+            z-index: -2; /* 가장 뒤로 배치 */
+            opacity: 0.48; /* 동영상이 더욱 명확하게 보이도록 투명도 상향 */
+            filter: brightness(1.15) contrast(1.05) saturate(1.15); /* 어두운 영상을 화사하고 선명하게 보정 */
+            pointer-events: none;
+        }
+
+        /* 비디오를 한층 더 고급스럽게 감싸는 중앙 스포트라이트 오버레이 */
+        .video-overlay-tint {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 30%, rgba(15, 23, 42, 0.8) 100%);
+            z-index: -1; /* 비디오 바로 위에 위치 */
             pointer-events: none;
         }
     </style>
@@ -464,6 +477,8 @@
         <video class="gateway-bg-video" autoplay loop muted playsinline>
             <source src="솔이-2_.mp4" type="video/mp4">
         </video>
+        <!-- 중앙부를 밝히고 가장자리를 부드럽게 감싸는 그라데이션 필터 -->
+        <div class="video-overlay-tint"></div>
 
         <h1>😊 스마일 잠금해제</h1>
         <p style="color:#94a3b8; margin-bottom:20px;">활짝 웃어야 문이 열립니다!</p>
