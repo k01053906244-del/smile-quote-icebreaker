@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>어색A 서먹I - 뷰빈특별판</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Outfit:wght@300;600;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #smileGateway {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease;
+        }
+
+        #webcam {
+            width: 90%;
+            max-width: 380px;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid var(--primary);
+            display: none;
+            margin-bottom: 20px;
+            transform: scaleX(-1);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .container::-webkit-scrollbar {
+            display: none;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 16px 32px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* 텍스트 잘림 방지 */
+        #setup,
+        #punchline {
+            display: block;
+            width: 100%;
+            white-space: pre-wrap;
+            word-break: keep-all;
+            line-height: 1.6;
+        }
+
+        #setup {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+
+        #punchline {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #punchline.show {
+            opacity: 1;
+        }
+
+        .situation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .btn-situation {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            white-space: pre-wrap;
+            word-break: keep-all;
+        }
+
+        .btn-relock {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .balance-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+            word-break: keep-all;
+        }
+
+        .loading-text {
+            animation: pulse 1.5s infinite;
+            color: #c084fc;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="smileGateway">
+        <h1>😊 스마일 잠금해제</h1>
+        <p style="color:#94a3b8; margin-bottom:20px;">활짝 웃어야 문이 열립니다!</p>
+        <div id="gatewayLoader" class="loader"></div>
+        <p id="gatewayStatus" class="loading-text">AI 엔진 준비 중...</p>
+        <video id="webcam" autoplay playsinline></video>
+        <button type="button" id="startCamBtn" class="btn" style="display:none;">카메라 켜기</button>
+        <button type="button" onclick="window.forceUnlock()"
+            style="margin-top:20px; background:none; border:none; color:#64748b; text-decoration:underline; cursor:pointer;">(비상구)
+            그냥 입장</button>
+    </div>
+
+    <button class="btn-relock" onclick="window.relockApp()">📷 다시 잠금</button>
+
+    <div class="container">
+        <h1>어색A 서먹I</h1>
+        <div id="mainView">
+            <div id="dailyGameCards" style="margin-bottom: 20px;"></div>
+            <button class="btn"
+                style="width:100%; margin-bottom:10px; background:linear-gradient(135deg, #a855f7, #d946ef);"
+                onclick="window.showListView('어색')">어색AI (돌발/민망)</button>
+            <button class="btn" style="width:100%; background:linear-gradient(135deg, #3b82f6, #0ea5e9);"
+                onclick="window.showListView('서먹')">서먹AI (초면/정적)</button>
+        </div>
+        <div id="listView" style="display: none;">
+            <div id="situationList" class="situation-list"></div>
+            <button class="btn" onclick="window.goHome()">처음으로</button>
+        </div>
+        <div id="resultView" style="display: none; flex-direction: column;">
+            <div id="setup"></div>
+            <div id="punchline"></div>
+            <div style="display:flex; gap:10px; margin-top:30px;">
+                <button class="btn" style="flex:1" onclick="window.showListView(currentCategory)">목록</button>
+                <button class="btn" style="flex:1; background:#64748b;" onclick="window.goHome()">홈</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+        // ★ [데이터 복구] 원본 humorData 60종 전체 탑재[cite: 1]
+        const humorData = [
+            { category: "어색", situation: "전 애인 마주침", guide: "피하거나 숨으면 더 초라해집니다.", joke: "어, 안녕! 세상 진짜 좁다. 오늘 복권 사야겠네." },
+            { category: "어색", situation: "단둘이 엘리베이터", guide: "가벼운 날씨 이야기로 침묵을 깨보세요.", joke: "이 엘리베이터는 1층까지 참 멀게 느껴지네요. 정적 때문인가요?" },
+            { category: "어색", situation: "이름 까먹음", guide: "솔직하고 유쾌하게 다시 물어보세요.", joke: "성함 한 번만 다시 알려주시면 절대 안 잊을게요!" },
+            { category: "어색", situation: "카톡 오폭(실수)", guide: "즉시 실수를 인정하고 수습하세요.", joke: "방금 톡은 제 손가락이 자아가 있어서 보낸 거예요!" },
+            { category: "어색", situation: "분위기 싸해짐", guide: "싸해진 분위기 자체를 언급하세요.", joke: "누가 냉장고 문 열어놨나요? 갑자기 겨울왕국이네요!" },
+            { category: "어색", situation: "인사 착각", guide: "당황하지 말고 자연스럽게 넘기세요.", joke: "너무 인상이 좋으셔서 제 지인인 줄 알았어요!" },
+            { category: "어색", situation: "회의 중 꼬르륵", guide: "배고픔을 솔직하게 말해 환기시키세요.", joke: "제 배가 회의 내용이 너무 맛있어 보여서 소리를 냈네요." },
+            { category: "어색", situation: "옷차림 겹침", guide: "서로의 취향이 통했음을 칭찬하세요.", joke: "오늘 우리 텔레파시 통한 거 맞죠? 운명인데요!" },
+            { category: "어색", situation: "썰렁한 농담", guide: "업데이트 중이라 오류가 났다고 인정하세요.", joke: "제 유머 감각이 업데이트 중이라 오류가 났네요. 잊어주세요!" },
+            { category: "어색", situation: "뒷담화 들킴", guide: "즉시 사과하고 상황을 수습하세요.", joke: "제 실수입니다. 정말 죄송합니다. 밥 한 번 살게요!" },
+            { category: "어색", situation: "카드 한도 초과", guide: "기계 오류 탓을 하거나 다른 결제 수단을 찾으세요.", joke: "카드가 오늘은 파업을 선언했네요. 다른 걸로 할게요!" },
+            { category: "어색", situation: "화장실 마주침", guide: "가벼운 눈인사만 하고 볼일에 집중하세요.", joke: "여기서 뵈니 정말 '밀접한' 동료가 된 기분이네요!" },
+            { category: "어색", situation: "바지 지퍼 열림", guide: "발견 즉시 뒤돌아 수습하고 넘기세요.", joke: "오늘 통풍이 너무 잘 된다 했더니... 지퍼를 놓쳤네요!" },
+            { category: "어색", situation: "혼잣말 들킴", guide: "중요한 회의 중이었다고 너스레를 떠세요.", joke: "제가 저랑 아주 중요한 회의 중이었는데 들으셨나요?" },
+            { category: "어색", situation: "발표 중 실수", guide: "집중력 테스트였다고 자연스럽게 정정하세요.", joke: "여러분의 집중력을 테스트해 본 거예요. 다들 합격이시네요!" },
+            { category: "어색", situation: "조용한 곳 벨소리", guide: "빠르게 끄고 교육시키겠다며 사과하세요.", joke: "제 휴대폰이 여기가 너무 조용해서 심심했나 봐요." },
+            { category: "어색", situation: "노래방 정적", guide: "박수를 유도하거나 다음 곡을 예약하세요.", joke: "이 노래, 전주가 참 길죠? 우리 박수나 좀 쳐볼까요?" },
+            { category: "어색", situation: "길 가다 넘어짐", guide: "지구가 세게 끌어당겼다고 웃으며 일어나세요.", joke: "지구가 저를 너무 세게 끌어당기네요! 지구랑 친한 척 좀 해봤습니다." },
+            { category: "어색", situation: "이빨에 고춧가루", guide: "비상식량으로 챙겨둔 거라고 농담하세요.", joke: "오, 오늘 제 식단이 들통났네요. 비상식량인데!" },
+            { category: "어색", situation: "억지웃음 들킴", guide: "쥐가 날 뻔했다고 화제를 전환하세요.", joke: "하하, 저 방금 너무 열심히 웃어서 안면 근육에 쥐 날 뻔했어요!" },
+            { category: "어색", situation: "상사와 화장실", guide: "가벼운 목례 후 대화는 삼가세요.", joke: "여기서 뵈니 정말 가족 같은 느낌이네요. 부장님!" },
+            { category: "어색", situation: "생일 축하 정적", guide: "케이크 촛불에 집중하고 소원을 비세요.", joke: "성스러운 분위기가 됐네요. 자, 소원 빌어볼까요?" },
+            { category: "어색", situation: "나만 모르는 얘기", guide: "질문을 던져 대화에 참여하세요.", joke: "우와, 다들 아시는 얘긴가 봐요! 저도 좀 알려주세요, 궁금해요!" },
+            { category: "어색", situation: "다단계/보험 권유", guide: "말솜씨를 칭찬하며 단호하게 거절하세요.", joke: "와, 말솜씨가 정말 좋으시네요! 그 재능으로 다른 거 하셔도 대박 나겠어요!" },
+            { category: "어색", situation: "갑작스런 장기자랑", guide: "진지하게 만드는 것이 장기라고 하세요.", joke: "제 장기는 10초 만에 분위기를 진지하게 만드는 겁니다. 시작합니다!" },
+            { category: "어색", situation: "대화 뚝 끊김", joke: "우리 대화에 쉼표가 생겼네요. 이제 다시 마침표를 찍어볼까요?", guide: "공통 관심사나 주변 상황 질문을 던지세요." },
+            { category: "어색", situation: "다른 이름 부름", joke: "이름을 잘못 불렀네요. 제정신이 아닌가 봐요. 정말 미안해요!", guide: "즉시 사과하고 미안함을 표현하세요." },
+            { category: "어색", situation: "말귀 못 알아들음", joke: "제 뇌가 지금 버퍼링 중인가 봐요. 한 번만 다시 말씀해주시겠어요?", guide: "이해한 척하기보다 다시 설명을 부탁하세요." },
+            { category: "어색", situation: "거짓말 들킴", joke: "사실 잘 보이고 싶어서 조금 과장했어요. 이제 솔직하게 말할게요!", guide: "변명하기보다 솔직하게 인정하고 사과하세요." },
+            { category: "어색", situation: "계산대 눈치게임", joke: "오늘은 제가 이겼습니다! 다음엔 꼭 지게 해 주세요!", guide: "기분 좋게 한 사람이 내고 다음을 기약하세요." },
+            { category: "서먹", situation: "서먹한 동창회", guide: "마피아 게임 하냐며 너스레를 떠세요.", joke: "다들 마피아 게임해? 왜 이렇게 조용해. 우리 중에 누가 젤 출세했나 눈치 봐?" },
+            { category: "서먹", situation: "어색한 가족 모임", guide: "독서실 분위기라며 대화를 유도하세요.", joke: "우리 가족 다 모였는데 독서실 분위기네요. 누가 재밌는 얘기 좀 해봐요!" },
+            { category: "서먹", situation: "소개팅 첫 만남", guide: "날씨나 오는 길 이야기로 시작하세요.", joke: "오늘 날씨가 참 좋죠? 오는 길에 차는 안 막히셨어요?" },
+            { category: "서먹", situation: "부장님과 독대", guide: "넥타이 등 부장님의 안목을 칭찬하세요.", joke: "부장님 오늘 넥타이 색깔이 참 연출이 좋으시네요. 안목이 좋으십니다!" },
+            { category: "서먹", situation: "신규 프로젝트팀", guide: "어벤져스라며 긍정적인 기대를 표현하세요.", joke: "우리가 이번 프로젝트의 어벤져스군요. 잘 부탁드립니다!" },
+            { category: "서먹", situation: "동호회 첫 정모", guide: "가입 동기를 물으며 공감대를 형성하세요.", joke: "다들 이 모임엔 어떻게 오시게 됐나요? 저는 예전부터 관심이 많았거든요." },
+            { category: "서먹", situation: "싸운 다음 날", guide: "커피를 쏘겠다며 먼저 사과하세요.", joke: "어제는 제가 말이 좀 짧았죠? 오늘 커피는 제가 쏘겠습니다!" },
+            { category: "서먹", situation: "안 친한 동료 카풀", guide: "차 승차감을 칭찬하며 대화하세요.", joke: "이 차 승차감이 참 좋네요. 출근길이 덕분에 편안합니다!" },
+            { category: "서먹", situation: "엘리베이터 이웃", guide: "반갑게 날씨 인사를 건네보세요.", joke: "안녕하세요! 오늘 날씨가 참 좋네요. 좋은 하루 보내세요." },
+            { category: "서먹", situation: "조별과제 첫 모임", guide: "A+ 받을 것 같다고 응원하세요.", joke: "우리 조 느낌이 참 좋네요. 왠지 A+ 받을 것 같지 않나요?" },
+            { category: "서먹", situation: "어색한 애인 친구", guide: "애인이 친구 자랑을 많이 했다고 하세요.", joke: "제 애인이 친구분들 자랑을 엄청 많이 하더라고요!" },
+            { category: "서먹", situation: "10년 만의 연락", guide: "갑자기 생각나 연락했다고 솔직히 말하세요.", joke: "야, 너 안 잊고 있었어! 갑자기 생각나서 연락해봤다." },
+            { category: "서먹", situation: "장인/장모님 독대", guide: "좋아하시는 취미를 여쭤보세요.", joke: "요즘 즐겨 보시는 드라마나 취미 있으세요? 제가 맞춰보겠습니다!" },
+            { category: "서먹", situation: "사춘기 자녀", guide: "스타일을 칭찬하며 다가가세요.", joke: "요즘 유행하는 스타일, 네가 하니까 진짜 잘 어울리네!" },
+            { category: "서먹", situation: "안 친한 친척 어른", guide: "정정하시다며 건강 비결을 여쭤보세요.", joke: "오랜만에 뵈니 정말 정정하시네요. 비결이 뭐예요?" },
+            { category: "서먹", situation: "어색한 미용실", guide: "디자이너의 실력을 칭찬하세요.", joke: "선생님 손길이 정말 섬세하시네요. 믿음이 팍팍 갑니다!" },
+            { category: "서먹", situation: "조용한 택시 안", guide: "기사님께 가벼운 안부를 물으세요.", joke: "오늘도 고생 많으십니다. 이 시간엔 길이 좀 덜 막히네요." },
+            { category: "서먹", situation: "안 친한 지인 결혼식", guide: "신랑 신부가 행복해 보인다고 하세요.", joke: "신랑/신부가 너무 행복해 보이네요. 보기 좋죠?" },
+            { category: "서먹", situation: "나 홀로 회식 자리", guide: "안주 맛을 칭찬하며 말을 거세요.", joke: "여기 안주 정말 맛있네요. 다들 이거 드셔보셨나요?" },
+            { category: "서먹", situation: "룸메이트와 단둘이", guide: "저녁 메뉴를 같이 정하자고 하세요.", joke: "우리 오늘 저녁은 뭐 먹을까요? 메뉴 고민 좀 해볼까요?" },
+            { category: "서먹", situation: "스터디 첫날", guide: "함께 목표 달성하자고 파이팅하세요.", joke: "우리 다 같이 열공해서 목표 달성해봐요! 화이팅!" },
+            { category: "서먹", situation: "학부모 첫 모임", guide: "아이들이 같은 반이라 반갑다고 하세요.", joke: "아이들이 같은 반이라니 반가워요. 많이 가르쳐주세요!" },
+            { category: "서먹", situation: "옆자리 동료", guide: "간식을 나누며 업무 협조를 구하세요.", joke: "이거 드시면서 하세요. 오늘 업무가 좀 많죠?" },
+            { category: "서먹", situation: "퇴사 인사", guide: "그동안 감사했다고 인사하세요.", joke: "그동안 많이 배웠습니다. 덕분에 즐겁게 일했어요!" },
+            { category: "서먹", situation: "신입사원과 단둘이", guide: "신입 때의 어색함을 공유해 주세요.", joke: "처음엔 다 어색하죠? 저도 신입 때 그랬어요. 다 물어봐요!" },
+            { category: "서먹", situation: "100일째 존댓말", guide: "말을 놓자고 친근하게 제안하세요.", joke: "우리 이제 슬슬 말을 놓아볼까요? 더 친해지고 싶어서요!" },
+            { category: "서먹", situation: "동네 단골 식당", guide: "사장님의 손맛을 극찬해 보세요.", joke: "오늘도 변함없이 맛있네요. 사장님 손맛은 역시 최고예요!" },
+            { category: "서먹", situation: "타 회사 직원", guide: "자주 뵙는다며 가벼운 인사를 하세요.", joke: "안녕하세요. 매일 뵙는 것 같은데 인사는 처음 드리네요!" },
+            { category: "서먹", situation: "친구 지인 술자리", guide: "칭찬을 통해 호감을 표시하세요.", joke: "얘기 많이 들었어요! 실제로 뵈니 더 매력적이시네요." },
+            { category: "서먹", situation: "명절 사촌 동생", guide: "언제 이렇게 컸냐며 대견해 하세요.", joke: "와, 너 언제 이렇게 컸어? 이제 완전 어른 다 됐네!" }
+        ];
+
+        const dailyGames = ["평생 양치 안 하기 vs 평생 샤워 안 하기", "비트코인 1개 받기 vs 로또 1등 번호 알기", "100% 확률로 1억 vs 10% 확률로 100억"];
+
+        /* 핵심 로직 변수 */
+        const gateway = document.getElementById('smileGateway'), video = document.getElementById('webcam'), startBtn = document.getElementById('startCamBtn'), status = document.getElementById('gatewayStatus');
+        let faceLandmarker, stream, isUnlocked = false, animReqId, audioUnlocked = false;
+
+        // ★ [오디오 팩토리] 절대 실패하지 않는 오디오 세팅[cite: 1]
+        const successAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/success-fanfare-trumpet-notification-240.wav');
+        successAudio.preload = 'auto';
+
+        async function initAI() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate: "GPU" },
+                    outputFaceBlendshapes: true, runningMode: "VIDEO"
+                });
+                status.style.display = 'none'; document.getElementById('gatewayLoader').style.display = 'none';
+                startBtn.style.display = 'block';
+            } catch (e) { status.innerText = "네트워크를 확인해 주세요."; }
+        }
+        initAI();
+
+        startBtn.onclick = async () => {
+            // ★ [강제 오디오 언락] 버튼 클릭 시 0.1초 무음 재생으로 브라우저 권한 탈취
+            if (!audioUnlocked) {
+                successAudio.play().then(() => { successAudio.pause(); successAudio.currentTime = 0; audioUnlocked = true; }).catch(e => console.log("Audio unlock fail"));
+            }
+            startBtn.style.display = 'none'; status.innerText = "카메라 준비 중..."; status.style.display = 'block';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream; video.style.display = 'block'; status.style.display = 'none';
+                await video.play(); predictWebcam();
+            } catch (e) { window.forceUnlock(); }
+        };
+
+        async function predictWebcam() {
+            if (isUnlocked || video.paused) return;
+            const faceResults = faceLandmarker.detectForVideo(video, performance.now());
+            if (faceResults.faceBlendshapes?.length > 0) {
+                const shapes = faceResults.faceBlendshapes[0].categories;
+                const smile = (shapes.find(s => s.categoryName === "mouthSmileLeft")?.score + shapes.find(s => s.categoryName === "mouthSmileRight")?.score) / 2;
+                if (smile > 0.20) {
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                    // ★ [오디오 재생] 권한이 확보된 상태에서 즉시 재생
+                    successAudio.play().catch(e => console.log("Audio blocked", e));
+                    setTimeout(window.forceUnlock, 800);
+                    return;
+                }
+            }
+            animReqId = requestAnimationFrame(predictWebcam);
+        }
+
+        window.forceUnlock = () => {
+            if (isUnlocked) return; isUnlocked = true;
+            if (animReqId) cancelAnimationFrame(animReqId);
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            gateway.style.display = 'none';
+        };
+
+        window.relockApp = () => {
+            isUnlocked = false; gateway.style.display = 'flex';
+            video.style.display = 'none'; startBtn.style.display = 'block';
+            window.goHome();
+        };
+
+        /* 뷰 컨트롤러 */
+        const mainView = document.getElementById('mainView'), listView = document.getElementById('listView'), resultView = document.getElementById('resultView'), situationList = document.getElementById('situationList'), setupEl = document.getElementById('setup'), punchlineEl = document.getElementById('punchline');
+        window.currentCategory = ''; let filteredData = [];
+
+        window.showListView = (cat) => {
+            window.currentCategory = cat; filteredData = humorData.filter(d => d.category === cat);
+            situationList.innerHTML = '';
+            filteredData.forEach((item, idx) => {
+                const b = document.createElement('button'); b.className = 'btn-situation'; b.innerText = `• ${item.situation}`;
+                b.onclick = () => showResult(idx); situationList.appendChild(b);
+            });
+            mainView.style.display = 'none'; listView.style.display = 'block'; resultView.style.display = 'none';
+        };
+
+        function showResult(idx) {
+            const item = filteredData[idx];
+            listView.style.display = 'none'; resultView.style.display = 'flex';
+            setupEl.innerHTML = `<span style="color:${window.currentCategory === '어색' ? '#c084fc' : '#38bdf8'}">[${item.situation}]</span><br>💡 ${item.guide}`;
+            punchlineEl.innerText = `"${item.joke}"`; punchlineEl.classList.remove('show');
+            setTimeout(() => punchlineEl.classList.add('show'), 300);
+        }
+
+        window.goHome = () => { mainView.style.display = 'block'; listView.style.display = 'none'; resultView.style.display = 'none'; };
+
+        function renderBalance() {
+            const container = document.getElementById('dailyGameCards');
+            dailyGames.forEach(g => {
+                const d = document.createElement('div'); d.className = 'balance-card'; d.innerText = g; container.appendChild(d);
+            });
+        }
+        renderBalance();
+    </script>
+</body>
+
+</html>
