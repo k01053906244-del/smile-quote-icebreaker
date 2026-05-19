@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "byubinfutureworks"
+  },
+  "targets": {
+    "byubinfutureworks": {
+      "hosting": {
+        "smilequote": [
+          "byubin-smile-quote"
+        ]
+      }
+    }
   }
 }
