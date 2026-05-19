@@ -399,7 +399,7 @@
         .byubin-together-logo {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 20px; /* 왼쪽에 배치 */
             z-index: 10002; /* 최상단 영구 고정 */
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(12px);
@@ -426,7 +426,7 @@
             font-weight: 700;
             letter-spacing: 0.8px;
             color: #f8fafc;
-            text-transform: uppercase;
+            text-transform: none; /* 대문자 강제 해제 */
         }
 
         .byubin-together-logo .accent-text {
@@ -441,7 +441,7 @@
 <body>
     <!-- 뷰빈 together 고정 로고 -->
     <div class="byubin-together-logo">
-        <span class="logo-text">byubin <span class="accent-text">together</span></span>
+        <span class="logo-text">뷰빈 <span class="accent-text">together</span></span>
     </div>
 
     <!-- 외부 오디오 파일 링크 완전 삭제 (로컬 칩셋 합성 방식으로 교체) -->
