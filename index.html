@@ -394,10 +394,56 @@
             font-size: 1.05rem;
             box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
+
+        /* 뷰빈 together 고정 로고 스타일 */
+        .byubin-together-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10002; /* 최상단 영구 고정 */
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            pointer-events: none; /* 터치 방해 금지 */
+            animation: fadeInLogo 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInLogo {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .byubin-together-logo .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #f8fafc;
+            text-transform: uppercase;
+        }
+
+        .byubin-together-logo .accent-text {
+            background: linear-gradient(135deg, #facc15, #f87171);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
     </style>
 </head>
 
 <body>
+    <!-- 뷰빈 together 고정 로고 -->
+    <div class="byubin-together-logo">
+        <span class="logo-text">byubin <span class="accent-text">together</span></span>
+    </div>
+
     <!-- 외부 오디오 파일 링크 완전 삭제 (로컬 칩셋 합성 방식으로 교체) -->
 
     <div id="smileGateway">
