@@ -769,7 +769,7 @@
             if (faceResults.faceBlendshapes?.length > 0) {
                 const shapes = faceResults.faceBlendshapes[0].categories;
                 const smile = (shapes.find(s => s.categoryName === "mouthSmileLeft")?.score + shapes.find(s => s.categoryName === "mouthSmileRight")?.score) / 2;
-                if (smile > 0.20) {
+                if (smile > 0.25) {
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                     playRetroFanfare();
                     setTimeout(window.forceUnlock, 800);
