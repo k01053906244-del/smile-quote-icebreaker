@@ -47,8 +47,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.98);
-            backdrop-filter: blur(15px);
+            background: transparent;
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -88,7 +87,8 @@
             display: none;
         }
 
-        h1 {
+        /* 내부 메인화면 h1 - 그라데이션 텍스트 */
+        .container h1 {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
             font-size: 2.2rem;
@@ -96,6 +96,23 @@
             background: linear-gradient(to right, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        /* 게이트웨이(잠금화면) h1 - 이모티콘이 보이도록 일반 흰색 텍스트 */
+        #smileGateway h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: #ffffff;
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: unset;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
         .btn {
@@ -445,8 +462,8 @@
             height: 100%;
             object-fit: cover;
             z-index: -2; /* 가장 뒤로 배치 */
-            opacity: 0.48; /* 동영상이 더욱 명확하게 보이도록 투명도 상향 */
-            filter: brightness(1.15) contrast(1.05) saturate(1.15); /* 어두운 영상을 화사하고 선명하게 보정 */
+            opacity: 1; /* 투명도 없이 원본 100% (강아지를 가장 선명하게) */
+            filter: brightness(1.1) contrast(1.1); /* 너무 과한 보정 없이 원본의 화사함 유지 */
             pointer-events: none;
         }
 
@@ -457,9 +474,109 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, transparent 30%, rgba(15, 23, 42, 0.8) 100%);
-            z-index: -1; /* 비디오 바로 위에 위치 */
+            /* 중앙 강아지 부분은 투명(transparent)하게 남겨 시선을 집중시키고,
+               가장자리로 갈수록 짙은 검은색(0.95)으로 덮어 어둡게 만들며,
+               영화 같은 그리드 패턴을 깔아줍니다. */
+            background: 
+                radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.95) 85%),
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            z-index: -1;
             pointer-events: none;
+        }
+
+        /* 프리미엄 수익화 빌드업 배너 스타일 */
+        .premium-monetization-card {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .premium-monetization-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .pm-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pm-badge {
+            background: linear-gradient(135deg, #facc15, #f87171);
+            color: #1e1b4b;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pm-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .pm-desc {
+            font-size: 0.76rem;
+            color: #94a3b8;
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+
+        .pm-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pm-btn-primary {
+            flex: 1.3;
+            background: linear-gradient(135deg, #facc15, #f87171);
+            color: #0f172a;
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-align: center;
+        }
+
+        .pm-btn-primary:active {
+            opacity: 0.9;
+        }
+
+        .pm-btn-secondary {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .pm-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -468,6 +585,11 @@
     <!-- 뷰빈 together 고정 로고 -->
     <div class="byubin-together-logo">
         <span class="logo-text">뷰빈 <span class="accent-text">together</span></span>
+    </div>
+
+    <!-- 하단 고정 멤버십 문구 (뷰빈 together와 동일한 글로벌 레이어) -->
+    <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10002; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 24px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); pointer-events: none; animation: fadeInLogo 1s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; color: #facc15; font-size: 0.95rem; font-weight: 700; width: max-content;">
+        ✨ 프리미엄 멤버십 운영 중 ✨
     </div>
 
     <!-- 외부 오디오 파일 링크 완전 삭제 (로컬 칩셋 합성 방식으로 교체) -->
@@ -480,13 +602,13 @@
         <!-- 중앙부를 밝히고 가장자리를 부드럽게 감싸는 그라데이션 필터 -->
         <div class="video-overlay-tint"></div>
 
-        <h1>😊 스마일 잠금해제</h1>
-        <p style="color:#94a3b8; margin-bottom:20px;">활짝 웃어야 문이 열립니다!</p>
+        <h1><span style="font-size: 4.5rem; animation: pulse 1.5s infinite; transform-origin: center; display: inline-flex; align-items: center; justify-content: center; width: 90px; height: 90px; background: #2563eb; border-radius: 20px; box-shadow: 0 0 25px rgba(37, 99, 235, 0.8);">😊</span> 어색A서먹I</h1>
+        <p style="color:#ffffff; font-weight: 700; margin-bottom:20px; text-shadow: 0 2px 12px rgba(0,0,0,1);">활짝 웃어야 문이 열립니다!</p>
         <div id="gatewayLoader" class="loader"></div>
         <p id="gatewayStatus" class="loading-text">AI 엔진 준비 중...</p>
         <video id="webcam" autoplay playsinline></video>
         <button type="button" id="startCamBtn" class="btn" style="display:none;">카메라 켜기</button>
-        <button type="button" onclick="initAudioEngine(); window.forceUnlock()"
+        <button type="button" onclick="if(checkUsageLimit()) { initAudioEngine(); window.forceUnlock(); }"
             style="margin-top:20px; background:none; border:none; color:#64748b; text-decoration:underline; cursor:pointer;">(비상구)
             그냥 입장</button>
     </div>
@@ -516,7 +638,7 @@
             <div class="daily-game-container">
                 <p class="daily-game-title">🔥 무한 밸런스 게임</p>
                 <p class="tap-hint">카드를 터치하면 다음 질문이 나옵니다!</p>
-                <div id="balanceCardArea" onclick="window.shuffleBalanceCard()"></div>
+                <div id="balanceCardArea" onclick="window.shuffleBalanceCard(true)"></div>
             </div>
             <button class="btn"
                 style="width:100%; margin-bottom:12px; background:linear-gradient(135deg, #a855f7, #d946ef);"
@@ -662,6 +784,41 @@
         const gateway = document.getElementById('smileGateway'), video = document.getElementById('webcam'), startBtn = document.getElementById('startCamBtn'), status = document.getElementById('gatewayStatus');
         let faceLandmarker, stream, isUnlocked = false, animReqId;
 
+        // 무료 횟수 제한 로직 (localStorage) - 3분 대기 시간 추가
+        function checkUsageLimit() {
+            const today = new Date().toISOString().split('T')[0];
+            const now = Date.now();
+            let usageData = JSON.parse(localStorage.getItem('smileUsage') || '{"date":"", "count":0, "lockUntil":0}');
+            
+            // 날짜가 바뀌면 완전 초기화
+            if (usageData.date !== today) {
+                usageData = { date: today, count: 0, lockUntil: 0 };
+            }
+            
+            // 아직 3분 대기 시간이 안 끝난 경우
+            if (usageData.lockUntil > now) {
+                const remainingSecs = Math.ceil((usageData.lockUntil - now) / 1000);
+                const remainingMins = Math.ceil(remainingSecs / 60);
+                alert(`✨ 오늘 무료 제공량(5회)을 모두 소진했습니다! ✨\n무제한 이용을 원하시면 하단의 프리미엄 멤버십을 확인해주세요.\n\n(약 ${remainingMins}분 후 다시 이용 가능)`);
+                return false;
+            }
+            
+            // 5회 모두 사용한 경우 -> 3분 잠금 시작
+            if (usageData.count >= 5) {
+                usageData.lockUntil = now + 3 * 60 * 1000; // 3분
+                usageData.count = 0; // 3분 뒤 다시 쓸 수 있게 횟수 초기화
+                localStorage.setItem('smileUsage', JSON.stringify(usageData));
+                
+                alert("✨ 오늘 무료 제공량(5회)을 모두 소진했습니다! ✨\n무제한 이용을 원하시면 하단의 프리미엄 멤버십을 확인해주세요.\n\n(3분 대기 후 무료 횟수가 갱신됩니다.)");
+                return false;
+            }
+            
+            // 사용 가능
+            usageData.count++;
+            localStorage.setItem('smileUsage', JSON.stringify(usageData));
+            return true;
+        }
+
         // ★ [Web Audio API] 브라우저 자체 칩셋을 이용한 레트로 게임 팡파르 합성기 (절대 실패 없음)
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
@@ -787,6 +944,7 @@
         initAI();
 
         startBtn.onclick = async () => {
+            if (!checkUsageLimit()) return;
             initAudioEngine();
             startBtn.style.display = 'none'; status.innerText = "카메라 켜는 중..."; status.style.display = 'block';
             try {
@@ -921,7 +1079,7 @@
             window.goHome();
         };
 
-        window.shuffleBalanceCard = () => {
+        window.shuffleBalanceCard = (isUserClick = false) => {
             playDrumSound();
             const area = document.getElementById('balanceCardArea');
             const rand = balanceDB[Math.floor(Math.random() * balanceDB.length)];
