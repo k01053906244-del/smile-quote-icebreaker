@@ -1,0 +1,28 @@
+{
+  "quoteSchema": {
+    "text_ko": "string (Korean translation of the quote)",
+    "text_en": "string (Original English quote)",
+    "author": "string (Name of the author)",
+    "category": "string (Category of quote, e.g., '동기부여', '미소', '지혜')"
+  },
+  "quotes": [
+    {
+      "text_ko": "웃음은 두 사람 사이의 가장 가까운 거리이다.",
+      "text_en": "A laugh is the shortest distance between two people.",
+      "author": "빅터 보르게 (Victor Borge)",
+      "category": "미소"
+    },
+    {
+      "text_ko": "어제는 역사이고, 내일은 미스터리이며, 오늘은 선물이다. 그래서 그것을 '프레젠트'라고 부른다.",
+      "text_en": "Yesterday is history, tomorrow is a mystery, today is a gift of God, which is why we call it the present.",
+      "author": "빌 키스 (Bill Keane)",
+      "category": "지혜"
+    },
+    {
+      "text_ko": "인생에서 가장 큰 영광은 단 한 번도 넘어지지 않는 것이 아니라, 넘어질 때마다 다시 일어나는 데 있다.",
+      "text_en": "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+      "author": "넬슨 만델라 (Nelson Mandela)",
+      "category": "동기부여"
+    }
+  ]
+}

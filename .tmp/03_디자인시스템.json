@@ -1,0 +1,21 @@
+{
+  "theme": "Dark Glassmorphism",
+  "colors": {
+    "primary": "#6366f1",
+    "secondary": "#a855f7",
+    "background": "radial-gradient(circle at top left, #1e1b4b, #0f172a)",
+    "modal_bg": "rgba(15, 23, 42, 0.95)",
+    "border_color": "rgba(255, 255, 255, 0.1)",
+    "text_ko": "#f8fafc",
+    "text_en": "#94a3b8",
+    "accent": "#facc15"
+  },
+  "fonts": {
+    "title": "'Outfit', sans-serif",
+    "body": "'Inter', sans-serif"
+  },
+  "animations": {
+    "fade_in": "cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+    "scale_up": "scaleUp 0.4s ease"
+  }
+}

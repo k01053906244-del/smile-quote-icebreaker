@@ -297,6 +297,103 @@
                 opacity: 1;
             }
         }
+
+        /* 명언 오버레이 모달 신규 스타일 */
+        .quote-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(25px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .quote-modal-card {
+            width: 90%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: quotePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes quotePop {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .quote-modal-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .quote-modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #facc15, #f87171);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .quote-divider {
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+            margin-bottom: 20px;
+        }
+
+        .quote-content-box {
+            margin-bottom: 25px;
+            padding: 10px;
+        }
+
+        .quote-text-ko {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.6;
+            color: #f8fafc;
+            word-break: keep-all;
+            margin-bottom: 12px;
+        }
+
+        .quote-text-en {
+            font-size: 0.95rem;
+            font-style: italic;
+            line-height: 1.5;
+            color: #94a3b8;
+            word-break: keep-all;
+            margin-bottom: 15px;
+        }
+
+        .quote-author {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        .quote-close-btn {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
     </style>
 </head>
 
@@ -313,6 +410,23 @@
         <button type="button" onclick="initAudioEngine(); window.forceUnlock()"
             style="margin-top:20px; background:none; border:none; color:#64748b; text-decoration:underline; cursor:pointer;">(비상구)
             그냥 입장</button>
+    </div>
+
+    <!-- 오늘의 미소 보상 명언 모달 -->
+    <div id="quoteModal" class="quote-modal-overlay" style="display: none;">
+        <div class="quote-modal-card">
+            <div class="quote-modal-icon">🎁</div>
+            <h2 class="quote-modal-title">오늘의 미소 보상 명언</h2>
+            <hr class="quote-divider" />
+            <div class="quote-content-box">
+                <p id="quoteKo" class="quote-text-ko"></p>
+                <p id="quoteEn" class="quote-text-en"></p>
+                <p id="quoteAuthor" class="quote-author"></p>
+            </div>
+            <button type="button" class="btn quote-close-btn" onclick="window.closeQuoteModal()">
+                기분 좋게 하루 시작하기 😊
+            </button>
+        </div>
     </div>
 
     <button class="btn-relock" onclick="window.relockApp()">📷 다시 잠금</button>
@@ -612,7 +726,6 @@
                 if (smile > 0.20) {
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                     playRetroFanfare();
-                    speak("당신이 최고입니다. 환영합니다.");
                     setTimeout(window.forceUnlock, 800);
                     return;
                 }
@@ -620,18 +733,72 @@
             animReqId = requestAnimationFrame(predictWebcam);
         }
 
+        // 고품격 미소 보상 한국어 명언 DB (오프라인/CORS 완전 예방 하이브리드 설계)
+        const quotesDB = [
+            { text_ko: "웃음은 두 사람 사이의 가장 가까운 거리입니다.", text_en: "A laugh is the shortest distance between two people.", author: "빅터 보르게" },
+            { text_ko: "행복해서 웃는 것이 아니라, 웃어서 행복한 것입니다.", text_en: "We don't laugh because we're happy, we're happy because we laugh.", author: "윌리엄 제임스" },
+            { text_ko: "당신이 미소 지을 때, 세상은 당신과 함께 미소 짓습니다.", text_en: "When you smile, the world smiles with you.", author: "엘라 휠러 윌콕스" },
+            { text_ko: "인생은 거울과 같습니다. 내가 미소 지으면 거울도 미소로 답합니다.", text_en: "Life is like a mirror, smile at it and it smiles back at you.", author: "피스 필그림" },
+            { text_ko: "미소는 지치고 피곤한 마음에 은은하게 빛나는 따스한 햇살과 같습니다.", text_en: "A smile is like sunshine that gently shines on a tired heart.", author: "지혜의 한마디" },
+            { text_ko: "오늘 당장 웃으며 첫발을 내딛는 것, 그것이 행복한 하루를 여는 비결입니다.", text_en: "Start your day with a smile, it is the secret of a good day.", author: "동기부여의 말" },
+            { text_ko: "당신의 고귀한 미소는 다른 사람의 어두운 세상을 밝히는 등불이 됩니다.", text_en: "Your noble smile is a lantern that brightens someone's dark world.", author: "사랑의 편지" },
+            { text_ko: "마음속에 항상 미소를 품으세요. 그것이 곧 평화와 승리로 가는 길입니다.", text_en: "Always carry a smile in your heart. It is the path to peace and victory.", author: "마더 테레사" },
+            { text_ko: "미소는 영혼이 창문 밖으로 보내는 가장 따뜻한 초대장입니다.", text_en: "A smile is a warm invitation sent by the soul out of its window.", author: "현자의 은유" },
+            { text_ko: "가장 아름다운 화장은 바로 당신의 밝고 자신감 넘치는 웃음 띤 미소입니다.", text_en: "The most beautiful makeup is your bright and confident smile.", author: "아름다움의 법칙" },
+            { text_ko: "어제는 지나간 역사이고, 오늘은 선물입니다. 활짝 웃으며 오늘을 즐기세요.", text_en: "Yesterday is history, today is a gift. Smile and enjoy it.", author: "오늘의 격언" },
+            { text_ko: "매 순간 웃으세요. 미소는 인생의 거친 폭풍을 잠재우는 강력한 힘입니다.", text_en: "Smile every moment. A smile is a powerful force to calm the storms of life.", author: "용기의 글귀" },
+            { text_ko: "지혜로운 사람은 최악의 상황에서도 먼저 미소 지으며 길을 찾아내고 맙니다.", text_en: "The wise man smiles first even in the worst situation and finds a way.", author: "지혜의 길" },
+            { text_ko: "미소는 돈 한 푼 들지 않지만, 받는 사람을 대단히 부유하게 만듭니다.", text_en: "A smile costs nothing but creates much. It enriches those who receive it.", author: "나눔의 가치" },
+            { text_ko: "남을 진정으로 행복하게 만들고 싶다면, 먼저 거울 속 자기 자신에게 미소 지어주세요.", text_en: "If you want to make others happy, smile at yourself in the mirror first.", author: "자존감의 시작" },
+            { text_ko: "인생에서 가장 가치 있는 일은 다른 누군가의 얼굴에 따뜻한 미소를 피워내는 것입니다.", text_en: "The most worthwhile thing in life is to put a smile on someone else's face.", author: "사랑의 기적" },
+            { text_ko: "웃음은 겨울의 시린 정적을 몰아내고 인간의 얼굴에 찬란한 봄을 데려옵니다.", text_en: "Laughter drives away winter and brings spring back to the human face.", author: "빅토르 위고" },
+            { text_ko: "당신의 소중한 하루를 항상 밝은 미소로 시작하고 미소로 따뜻하게 마무리하세요.", text_en: "Always start your day with a smile and finish it with a smile.", author: "인생 철학" }
+        ];
+
         window.forceUnlock = () => {
             if (!isUnlocked) {
                 isUnlocked = true;
                 gateway.style.display = 'none';
                 if (stream) stream.getTracks().forEach(t => t.stop());
+
+                // 임의의 미소 보상 명언 선택
+                const randQuote = quotesDB[Math.floor(Math.random() * quotesDB.length)];
+                document.getElementById('quoteKo').innerText = randQuote.text_ko;
+                document.getElementById('quoteEn').innerText = randQuote.text_en;
+                document.getElementById('quoteAuthor').innerText = `— ${randQuote.author}`;
+
+                // 명언 모달 표시
+                const qModal = document.getElementById('quoteModal');
+                qModal.style.display = 'flex';
+
+                // 한국어 음성 낭독 (TTS) 엔진 구동
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel(); // 낭독 대기열 완전 클리어
+                    const utter = new SpeechSynthesisUtterance(randQuote.text_ko);
+                    utter.lang = 'ko-KR';
+                    utter.rate = 0.92;  // 약간 여유롭고 따스한 어조
+                    utter.pitch = 1.0;  // 자연스러운 고저
+                    window.speechSynthesis.speak(utter);
+                }
             }
         };
+
+        window.closeQuoteModal = () => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // 낭독 즉시 취소
+            }
+            document.getElementById('quoteModal').style.display = 'none';
+        };
+
         window.relockApp = () => {
             isUnlocked = false;
             gateway.style.display = 'flex';
             video.style.display = 'none';
             startBtn.style.display = 'block';
+            document.getElementById('quoteModal').style.display = 'none'; // 오버레이 강제 제거 안전장치
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
             window.goHome();
         };
 
