@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "target": "smilequote",
+    "target": "smileagain",
     "public": ".",
     "ignore": [
       "firebase.json",

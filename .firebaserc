@@ -5,8 +5,8 @@
   "targets": {
     "byubinfutureworks": {
       "hosting": {
-        "smilequote": [
-          "byubin-smile-quote"
+        "smileagain": [
+          "byubin-smile-again"
         ]
       }
     }
